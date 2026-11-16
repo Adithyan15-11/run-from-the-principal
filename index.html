@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>RUN FROM THE PRINCIPAL! - Endless Hallway Runner</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game-container">
+    <!-- Main HTML5 Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Top In-Game HUD -->
+    <div id="hud" class="hidden">
+      <div class="hud-top-bar">
+        <div class="hud-stat-box score-box">
+          <span class="stat-label">SCORE</span>
+          <span id="hud-score" class="stat-value">0</span>
+        </div>
+
+        <div class="hud-stat-box coin-box">
+          <span class="coin-icon">⭐</span>
+          <span id="hud-coins" class="stat-value">0</span>
+        </div>
+
+        <div class="hud-stat-box distance-box">
+          <span class="stat-label">DIST</span>
+          <span id="hud-dist" class="stat-value">0m</span>
+        </div>
+
+        <div class="hud-stat-box runner-box" title="Active Runner">
+          <span class="stat-label">RUNNER</span>
+          <span id="hud-runner-name" class="stat-value">Adithyan</span>
+        </div>
+
+        <div class="hud-buttons">
+          <button id="mute-btn" class="icon-btn" title="Toggle Sound">🔊</button>
+          <button id="pause-btn" class="icon-btn" title="Pause Game">⏸️</button>
+        </div>
+      </div>
+
+      <!-- Warning Banner when Principal is very close -->
+      <div id="danger-banner" class="danger-banner hidden">
+        <span class="danger-icon">⚠️</span>
+        <span class="danger-text">PRINCIPAL IS ON YOUR TAIL! DON'T HIT ANYTHING!</span>
+        <span class="danger-icon">⚠️</span>
+      </div>
+
+      <!-- Active Power-ups Bar -->
+      <div id="powerup-bar" class="powerup-bar"></div>
+    </div>
+
+    <!-- Start / Title Screen -->
+    <div id="start-screen" class="overlay-screen">
+      <div class="title-card">
+        <div class="school-bell-badge">🔔 SCHOOL EMERGENCY!</div>
+        <h1 class="game-title">RUN FROM THE<br><span class="highlight-title">PRINCIPAL!</span></h1>
+        <p class="tagline">Sprint down the school hallway before detention catches you!</p>
+
+        <!-- Character Selection Section -->
+        <div class="character-select-section">
+          <div class="char-select-heading">⚡ CHOOSE YOUR RUNNER ⚡</div>
+          <div class="character-picker">
+            <div id="char-card-adithyan" class="char-card active" data-char="adithyan" title="Play as Adithyan">
+              <div class="char-avatar-ring">
+                <img src="player_face.png" alt="Adithyan" class="char-avatar-img">
+                <span class="char-tag-pill">STUDENT</span>
+              </div>
+              <div class="char-text-block">
+                <div class="char-title">Adithyan</div>
+                <div class="char-sub">The OG Runner</div>
+              </div>
+              <div class="char-status-badge">✔ READY</div>
+            </div>
+
+            <div id="char-card-jpsir" class="char-card" data-char="jpsir" title="Play as JP sir">
+              <div class="char-avatar-ring">
+                <img src="jp_sir.png" alt="JP sir" class="char-avatar-img">
+                <span class="char-tag-pill jp-pill">LEGEND</span>
+              </div>
+              <div class="char-text-block">
+                <div class="char-title">JP sir</div>
+                <div class="char-sub">Cool & Suave</div>
+              </div>
+              <div class="char-status-badge">SELECT</div>
+            </div>
+
+            <div id="char-card-nandettan" class="char-card" data-char="nandettan" title="Play as Nandettan">
+              <div class="char-avatar-ring">
+                <img src="nandettan.png" alt="Nandettan" class="char-avatar-img" onerror="this.src='player_face.png';">
+                <span class="char-tag-pill nandu-pill">BRO</span>
+              </div>
+              <div class="char-text-block">
+                <div class="char-title">Nandettan</div>
+                <div class="char-sub">The Cool Bro</div>
+              </div>
+              <div class="char-status-badge">SELECT</div>
+            </div>
+
+            <div id="char-card-vipin" class="char-card" data-char="vipin" title="Play as Vipin">
+              <div class="char-avatar-ring">
+                <img src="vipin.png" alt="Vipin" class="char-avatar-img" onerror="this.src='player_face.png';">
+                <span class="char-tag-pill vipin-pill">PRO</span>
+              </div>
+              <div class="char-text-block">
+                <div class="char-title">Vipin</div>
+                <div class="char-sub">Backbencher</div>
+              </div>
+              <div class="char-status-badge">SELECT</div>
+            </div>
+          </div>
+        </div>
+
+        <button id="start-btn" class="btn primary-btn pulse-anim">
+          <span class="btn-icon">🏃‍♂️</span> TAP TO RUN!
+        </button>
+
+        <div class="controls-guide">
+          <div class="control-col">
+            <span class="control-key">A / D or ◄ / ►</span>
+            <span class="control-desc">Change Lane</span>
+          </div>
+          <div class="control-col">
+            <span class="control-key">W / ▲ / Space</span>
+            <span class="control-desc">Jump</span>
+          </div>
+          <div class="control-col">
+            <span class="control-key">S / ▼</span>
+            <span class="control-desc">Slide</span>
+          </div>
+        </div>
+        <p class="mobile-tip">📱 Swipe Left/Right/Up/Down on touchscreens</p>
+      </div>
+    </div>
+
+    <!-- Pause Screen -->
+    <div id="pause-screen" class="overlay-screen hidden">
+      <div class="pause-card">
+        <h2>GAME PAUSED</h2>
+        <p>Catch your breath! The principal is waiting around the corner...</p>
+        <div class="button-group">
+          <button id="resume-btn" class="btn primary-btn">▶️ RESUME</button>
+          <button id="switch-char-pause-btn" class="btn tertiary-btn">👤 SWITCH RUNNER</button>
+          <button id="restart-from-pause-btn" class="btn secondary-btn">🔄 RESTART</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameover-screen" class="overlay-screen hidden">
+      <div class="gameover-card">
+        <div class="stamp-busted">BUSTED!</div>
+        <h2 id="gameover-title" class="gameover-title">DETENTION FOR LIFE!</h2>
+        <div id="gameover-quote" class="principal-quote">"POLEYADI MONE! BUSTED!! DETENTION FOR LIFE!"</div>
+
+        <div class="results-grid">
+          <div class="result-item">
+            <span class="res-label">FINAL SCORE</span>
+            <span id="final-score" class="res-value">0</span>
+          </div>
+          <div class="result-item">
+            <span class="res-label">BEST SCORE</span>
+            <span id="high-score" class="res-value">0</span>
+          </div>
+          <div class="result-item">
+            <span class="res-label">DISTANCE</span>
+            <span id="final-dist" class="res-value">0m</span>
+          </div>
+          <div class="result-item">
+            <span class="res-label">A+ STARS</span>
+            <span id="final-coins" class="res-value">0</span>
+          </div>
+        </div>
+
+        <div id="new-high-score-badge" class="high-score-badge hidden">🏆 NEW RECORD! 🏆</div>
+
+        <div id="punishment-text" class="punishment-box">
+          <strong>Official Punishment:</strong>
+          <span id="punishment-desc">500 lines: "I will not sprint past the staff room."</span>
+        </div>
+
+        <div class="button-group">
+          <button id="restart-btn" class="btn primary-btn pulse-anim">
+            <span class="btn-icon">⚡</span> PLAY AGAIN (SPACE)
+          </button>
+          <button id="switch-char-gameover-btn" class="btn secondary-btn">
+            <span class="btn-icon">👤</span> SWITCH RUNNER
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Virtual Control Overlay (for quick taps on touchscreen) -->
+    <div id="mobile-controls" class="mobile-controls">
+      <div class="mobile-btn-left-right">
+        <button id="btn-left" class="touch-btn">◀</button>
+        <button id="btn-right" class="touch-btn">▶</button>
+      </div>
+      <div class="mobile-btn-up-down">
+        <button id="btn-up" class="touch-btn">▲<br><small>JUMP</small></button>
+        <button id="btn-down" class="touch-btn">▼<br><small>SLIDE</small></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preloaded Audio Elements for Interface & Gameplay -->
+  <audio id="menu-audio-elem" loop preload="auto">
+    <source src="menu.mp3" type="audio/mpeg">
+    <source src="menu.ogg" type="audio/ogg">
+  </audio>
+  <audio id="fart-audio-elem" preload="auto">
+    <source src="fart.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="start-audio-elem" preload="auto">
+    <source src="start_run.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="select-adithyan-audio-elem" preload="auto">
+    <source src="select_adithyan.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="select-jpsir-audio-elem" preload="auto">
+    <source src="select_jpsir.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="select-nandettan-audio-elem" preload="auto">
+    <source src="select_nandettan.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="select-vipin-audio-elem" preload="auto">
+    <source src="select_vipin.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="catch-audio-elem" preload="auto">
+    <source src="catch.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="urine-slip-audio-elem" preload="auto">
+    <source src="urine_slip.mp3" type="audio/mpeg">
+    <source src="urine_slip.ogg" type="audio/ogg">
+  </audio>
+  <audio id="boost-1-audio-elem" preload="auto">
+    <source src="boost_1.mp3" type="audio/mpeg">
+    <source src="boost_1.ogg" type="audio/ogg">
+  </audio>
+  <audio id="boost-2-audio-elem" preload="auto">
+    <source src="boost_2.mp3" type="audio/mpeg">
+    <source src="boost_2.ogg" type="audio/ogg">
+  </audio>
+
+  <script src="game.js"></script>
+</body>
+</html>
